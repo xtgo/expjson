@@ -136,8 +136,8 @@ import (
 // string, an integer type, or implement encoding.TextMarshaler. The map keys
 // are sorted and used as JSON object keys by applying the following rules,
 // subject to the UTF-8 coercion described for string values above:
-//   - string keys are used directly
 //   - encoding.TextMarshalers are marshaled
+//   - string keys are used directly
 //   - integer keys are converted to strings
 //
 // Pointer values encode as the value pointed to.
@@ -863,14 +863,14 @@ type reflectWithString struct {
 }
 
 func (w *reflectWithString) resolve() error {
-	if w.v.Kind() == reflect.String {
-		w.s = w.v.String()
-		return nil
-	}
 	if tm, ok := w.v.Interface().(encoding.TextMarshaler); ok {
 		buf, err := tm.MarshalText()
 		w.s = string(buf)
 		return err
+	}
+	if w.v.Kind() == reflect.String {
+		w.s = w.v.String()
+		return nil
 	}
 	switch w.v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:

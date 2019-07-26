@@ -106,6 +106,24 @@ func (u *unmarshalerText) UnmarshalText(b []byte) error {
 	return nil
 }
 
+type strUnmarshalerText string
+
+// needed for re-marshaling tests
+func (s strUnmarshalerText) MarshalText() ([]byte, error) {
+	return []byte("(" + s + ")"), nil
+}
+
+var errMissingParens = errors.New("missing parentheses")
+
+func (s *strUnmarshalerText) UnmarshalText(b []byte) error {
+	n := len(b)
+	if n < 2 || b[0] != '(' || b[n-1] != ')' {
+		return errMissingParens
+	}
+	*s = strUnmarshalerText(b[1 : n-1])
+	return nil
+}
+
 var _ encoding.TextUnmarshaler = (*unmarshalerText)(nil)
 
 type ustructText struct {
@@ -153,6 +171,9 @@ var (
 
 	ummapType = map[unmarshalerText]bool{}
 	ummapXY   = map[unmarshalerText]bool{{"x", "y"}: true}
+
+	ummapStrType = map[strUnmarshalerText]bool{}
+	ummapStr     = map[strUnmarshalerText]bool{strUnmarshalerText("x"): true}
 )
 
 // Test data structures for anonymous fields.
@@ -573,6 +594,15 @@ var unmarshalTests = []unmarshalTest{
 	{in: `{"x:y":true}`, ptr: &ummapType, out: ummapXY},
 	// If multiple values for the same key exists, only the most recent value is used.
 	{in: `{"x:y":false,"x:y":true}`, ptr: &ummapType, out: ummapXY},
+
+	// encoding.TextUnmarshalers take precedence over strings as map keys too.
+	{in: `{"(x)":true}`, ptr: &ummapStrType, out: ummapStr},
+
+	{
+		in:  `{"x":true}`,
+		ptr: &ummapStrType,
+		err: errMissingParens,
+	},
 
 	// Overwriting of data.
 	// This is different from package xml, but it's what we've always done.

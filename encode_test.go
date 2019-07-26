@@ -790,6 +790,17 @@ func TestTextMarshalerMapKeysAreSorted(t *testing.T) {
 	}
 }
 
+func TestMapKeysTextMarshalerBeforeString(t *testing.T) {
+	b, err := Marshal(map[strUnmarshalerText]bool{"x": true})
+	if err != nil {
+		t.Fatalf("Failed to Marshal text.Marshaler: %v", err)
+	}
+	const want = `{"(x)":true}`
+	if string(b) != want {
+		t.Errorf("Marshal map with text.Marshaler keys: got %#q, want %#q", b, want)
+	}
+}
+
 var re = regexp.MustCompile
 
 // syntactic checks on form of marshaled floating point numbers.

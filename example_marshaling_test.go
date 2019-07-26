@@ -5,10 +5,11 @@
 package json_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
+
+	json "github.com/xtgo/exp-json"
 )
 
 type Animal int
