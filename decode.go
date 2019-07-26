@@ -94,10 +94,21 @@ import (
 // character U+FFFD.
 //
 func Unmarshal(data []byte, v interface{}) error {
+	var d decodeState
+	return unmarshal(&d, data, v)
+}
+
+// UnmarshalStrict is like Unmarshal, but behaves as if Decoder's
+// DisallowUnknownFields and UseNumber options were enabled.
+func UnmarshalStrict(data []byte, v interface{}) error {
+	d := decodeState{disallowUnknownFields: true, useNumber: true}
+	return unmarshal(&d, data, v)
+}
+
+func unmarshal(d *decodeState, data []byte, v interface{}) error {
 	// Check for well-formedness.
 	// Avoids filling out half a data structure
 	// before discovering a JSON syntax error.
-	var d decodeState
 	err := checkValid(data, &d.scan)
 	if err != nil {
 		return err
