@@ -67,9 +67,11 @@ import (
 // specify options without overriding the default field name.
 //
 // The "omitempty" option specifies that the field should be omitted
-// from the encoding if the field has an empty value, defined as
-// false, 0, a nil pointer, a nil interface value, and any empty array,
-// slice, map, or string.
+// from the encoding if the field has an empty value, defined as any zero
+// value per Go language reference rules, as well as any non-nil but
+// zero-length slice or map. If a value has an IsZero() method returning a
+// bool, that alone will be used to determine whether or not a value should
+// be included.
 //
 // As a special case, if the field tag is "-", the field is always omitted.
 // Note that a field with name "-" can still be generated using the tag "-,".
@@ -313,21 +315,26 @@ func (e *encodeState) error(err error) {
 }
 
 func isEmptyValue(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-		return v.Len() == 0
-	case reflect.Bool:
-		return !v.Bool()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return v.Uint() == 0
-	case reflect.Float32, reflect.Float64:
-		return v.Float() == 0
-	case reflect.Interface, reflect.Ptr:
-		return v.IsNil()
+	iv := v.Interface()
+	type isZeroer interface{ IsZero() bool }
+	if zv, ok := iv.(isZeroer); ok {
+		return zv.IsZero()
 	}
-	return false
+	switch v.Kind() {
+	case reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Invalid:
+		return true
+	}
+
+	zero := reflect.Zero(v.Type()).Interface()
+
+	if v.Type().Comparable() {
+		return iv == zero
+	}
+
+	// note: we really only need shallow equality with nil-friendliness.
+	return reflect.DeepEqual(iv, zero)
 }
 
 func (e *encodeState) reflectValue(v reflect.Value, opts encOpts) {

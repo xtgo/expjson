@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strconv"
 	"testing"
+	"time"
 	"unicode"
 )
 
@@ -23,6 +24,9 @@ type Optionals struct {
 
 	Ir int `json:"omitempty"` // actually named omitempty, not an option
 	Io int `json:"io,omitempty"`
+
+	Ar [4]byte `json:"ar"`
+	Ao [4]byte `json:"ao,omitempty"`
 
 	Slr []string `json:"slr,random"`
 	Slo []string `json:"slo,omitempty"`
@@ -41,25 +45,47 @@ type Optionals struct {
 
 	Str struct{} `json:"str"`
 	Sto struct{} `json:"sto,omitempty"`
+
+	Ssr struct{ V []int } `json:"ssr"`
+	Sso struct{ V []int } `json:"sso,omitempty"`
+
+	Tr time.Time `json:"tr"`
+	To time.Time `json:"to,omitempty"`
 }
 
 var optionalsExpected = `{
  "sr": "",
  "omitempty": 0,
+ "ar": [
+  0,
+  0,
+  0,
+  0
+ ],
  "slr": null,
  "mr": {},
  "fr": 0,
  "br": false,
  "ur": 0,
  "str": {},
- "sto": {}
+ "ssr": {
+  "V": null
+ },
+ "tr": "0001-01-01T01:00:00+01:00"
 }`
 
 func TestOmitEmpty(t *testing.T) {
+	// load a timezone that will make a zero-timed, non-zero struct
+	loc, err := time.LoadLocation("Etc/GMT-1")
+	if err != nil {
+		panic(err)
+	}
 	var o Optionals
 	o.Sw = "something"
 	o.Mr = map[string]interface{}{}
 	o.Mo = map[string]interface{}{}
+	o.Tr = o.Tr.In(loc)
+	o.To = o.To.In(loc)
 
 	got, err := MarshalIndent(&o, "", " ")
 	if err != nil {
