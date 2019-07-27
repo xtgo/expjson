@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package json_test
+package expjson_test
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	json "github.com/xtgo/exp-json"
+	json "github.com/xtgo/expjson"
 )
 
 func ExampleMarshal() {
@@ -105,20 +105,20 @@ func ExampleDecoder_Token() {
 		fmt.Printf("\n")
 	}
 	// Output:
-	// json.Delim: { (more)
+	// expjson.Delim: { (more)
 	// string: Message (more)
 	// string: Hello (more)
 	// string: Array (more)
-	// json.Delim: [ (more)
+	// expjson.Delim: [ (more)
 	// float64: 1 (more)
 	// float64: 2 (more)
 	// float64: 3
-	// json.Delim: ] (more)
+	// expjson.Delim: ] (more)
 	// string: Null (more)
 	// <nil>: <nil> (more)
 	// string: Number (more)
 	// float64: 1.234
-	// json.Delim: }
+	// expjson.Delim: }
 }
 
 // This example uses a Decoder to decode a streaming array of JSON objects.
@@ -164,13 +164,13 @@ func ExampleDecoder_Decode_stream() {
 	fmt.Printf("%T: %v\n", t, t)
 
 	// Output:
-	// json.Delim: [
+	// expjson.Delim: [
 	// Ed: Knock knock.
 	// Sam: Who's there?
 	// Ed: Go fmt.
 	// Sam: Go fmt who?
 	// Ed: Go fmt yourself!
-	// json.Delim: ]
+	// expjson.Delim: ]
 
 }
 

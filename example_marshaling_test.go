@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package json_test
+package expjson_test
 
 import (
 	"fmt"
 	"log"
 	"strings"
 
-	json "github.com/xtgo/exp-json"
+	json "github.com/xtgo/expjson"
 )
 
 type Animal int
