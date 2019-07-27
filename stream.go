@@ -176,6 +176,7 @@ type Encoder struct {
 	w          io.Writer
 	err        error
 	escapeHTML bool
+	nonNull    bool
 
 	indentBuf    *bytes.Buffer
 	indentPrefix string
@@ -197,7 +198,8 @@ func (enc *Encoder) Encode(v interface{}) error {
 		return enc.err
 	}
 	e := newEncodeState()
-	err := e.marshal(v, encOpts{escapeHTML: enc.escapeHTML})
+	opts := encOpts{escapeHTML: enc.escapeHTML, nonNull: enc.nonNull}
+	err := e.marshal(v, opts)
 	if err != nil {
 		return err
 	}
@@ -246,6 +248,11 @@ func (enc *Encoder) SetIndent(prefix, indent string) {
 // of the output, SetEscapeHTML(false) disables this behavior.
 func (enc *Encoder) SetEscapeHTML(on bool) {
 	enc.escapeHTML = on
+}
+
+// SetNonNull prevents nil maps and slices from encoding as null.
+func (enc *Encoder) SetNonNull(on bool) {
+	enc.nonNull = on
 }
 
 // RawMessage is a raw encoded JSON value.

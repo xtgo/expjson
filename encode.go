@@ -346,6 +346,8 @@ type encOpts struct {
 	quoted bool
 	// escapeHTML causes '<', '>', and '&' to be escaped in JSON strings.
 	escapeHTML bool
+	// nonNull causes nil reference types to not be
+	nonNull bool
 }
 
 type encoderFunc func(e *encodeState, v reflect.Value, opts encOpts)
@@ -683,7 +685,7 @@ type mapEncoder struct {
 }
 
 func (me mapEncoder) encode(e *encodeState, v reflect.Value, opts encOpts) {
-	if v.IsNil() {
+	if !opts.nonNull && v.IsNil() {
 		e.WriteString("null")
 		return
 	}
@@ -725,8 +727,8 @@ func newMapEncoder(t reflect.Type) encoderFunc {
 	return me.encode
 }
 
-func encodeByteSlice(e *encodeState, v reflect.Value, _ encOpts) {
-	if v.IsNil() {
+func encodeByteSlice(e *encodeState, v reflect.Value, opts encOpts) {
+	if !opts.nonNull && v.IsNil() {
 		e.WriteString("null")
 		return
 	}
@@ -761,7 +763,7 @@ type sliceEncoder struct {
 }
 
 func (se sliceEncoder) encode(e *encodeState, v reflect.Value, opts encOpts) {
-	if v.IsNil() {
+	if !opts.nonNull && v.IsNil() {
 		e.WriteString("null")
 		return
 	}
